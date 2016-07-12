@@ -9,20 +9,6 @@ var todos = [];
 var todoNextId = 1;
 
 app.use(bodyParser.json());
-// static test data
-// var todos = [{
-// 	id: 1,
-// 	description: 'Meet ben for lunch',
-// 	completed: false
-// }, {
-// 	id: 2,
-// 	description: 'Go to market',
-// 	completed: false
-// }, {
-// 	id: 3,
-// 	description: 'Feed the cat',
-// 	completed: true
-// }];
 
 app.get('/', function(req, res) {
 	res.send('Todo API Root');
@@ -32,6 +18,7 @@ app.get('/', function(req, res) {
 app.get('/todos', function(req, res) {
 	var queryParams = req.query;
 	var filteredTodos = todos;
+	console.log(filteredTodos);
 
 	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
 		filteredTodos = _.where(filteredTodos, {
@@ -55,15 +42,17 @@ app.get('/todos', function(req, res) {
 // GET /todos/:id
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {
-		id: todoId
+
+	db.todo.findById(todoId).then(function(todo) {
+		if (!!todo) {
+			res.json(todo.toJSON());
+		} else {
+			res.status(404).send();
+		}
+	}, function (e) {
+		res.status(500).send();
 	});
 
-	if (matchedTodo) {
-		res.json(matchedTodo);
-	} else {
-		res.status(404).send();
-	}
 });
 
 // POST /todos
@@ -76,19 +65,6 @@ app.post('/todos', function(req, res) {
 		res.status(400).json(e);
 
 	});
-
-	// if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-	// 	return res.status(400).send();
-	// }
-
-	// body.description = body.description.trim();
-
-	// body.id = todoNextId;
-	// todoNextId++;
-
-	// todos.push(body);
-	// //console.log('description: ' + body.description);
-	// res.json(body);
 });
 
 
